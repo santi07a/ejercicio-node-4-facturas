@@ -4,6 +4,7 @@ const express = require("express");
 const morgan = require("morgan");
 const { program } = require("commander");
 const chalk = require("chalk");
+const cors = require("cors");
 const options = require("./parametrosCLI");
 const facturasJSON = require("./facturas.json");
 const rutaFacturas = require("./rutas/facturas");
