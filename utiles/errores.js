@@ -1,15 +1,7 @@
-const generaError = (msg, status) => {
-  const error = new Error(msg);
+const generaError = (mensaje, status) => {
+  const error = new Error(mensaje);
   error.codigo = status;
   return error;
-};
-
-const sendErrores = (err, req, res, next) => {
-  const error = {
-    codigo: err.codigo || 500,
-    mensaje: err.codigo ? err.message : "Ha ocurrido un error general"
-  };
-  res.status(error.codigo).json({ error: true, mensaje: error.mensaje });
 };
 
 const errorNotFound = (req, res, next) => {
@@ -17,8 +9,16 @@ const errorNotFound = (req, res, next) => {
   next(error);
 };
 
+const errorGeneral = (err, req, res, next) => {
+  const error = {
+    codigo: err.codigo || 500,
+    mensaje: err.codigo ? err.message : "Ha ocurrido un error general"
+  };
+  res.status(error.codigo).json({ error: true, mensaje: error.mensaje });
+};
+
 module.exports = {
   generaError,
   errorNotFound,
-  sendErrores
+  errorGeneral
 };
