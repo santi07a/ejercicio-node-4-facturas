@@ -2,7 +2,6 @@ const express = require("express");
 const { checkSchema, check, validationResult } = require("express-validator");
 
 const router = express.Router();
-const facturasJSON = require("../facturas.json").facturas;
 const {
   getFacturasTipo,
   getFacturas,
@@ -12,6 +11,40 @@ const {
   modificaFactura,
   eliminaFactura
 } = require("../controladores/facturas");
+
+const getFacturaSchema = () => {
+  const numero = {
+    isLength: {
+      errorMessage: "El número tiene que tener 4 carácteres como mínimo",
+      options: {
+        min: 4
+      }
+    }
+  };
+  const fecha = {
+    errorMessage: "Falta la fecha de la factura",
+    notEmpty: true
+  };
+  const base = {
+    isFloat: {
+      errorMessage: "La base no es válida",
+      options: {
+        min: 0,
+      }
+    }
+  };
+  const tipoIva = {
+    isInt: {
+      errorMessage: "El tipo de Iva tiene que ser un número entero",
+      notEmpty: true
+    }
+  };
+  const tipo = {
+    errorMessage: "El tipo debe ser ingreso o gasto",
+    options: {
+    }
+  };
+};
 
 router.get("/", (req, res, next) => {
   res.json(getFacturas());
