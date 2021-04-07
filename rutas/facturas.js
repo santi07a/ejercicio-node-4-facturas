@@ -12,7 +12,7 @@ const {
   eliminaFactura
 } = require("../controladores/facturas");
 
-const getFacturaSchema = () => {
+const getFacturaSchema = type => {
   const numero = {
     isLength: {
       errorMessage: "El número tiene que tener 4 carácteres como mínimo",
@@ -40,11 +40,35 @@ const getFacturaSchema = () => {
     }
   };
   const tipo = {
-    errorMessage: "El tipo debe ser ingreso o gasto",
-    options: {
+    isLength: {
+      errorMessage: "El tipo ingresado no es válido",
+      notEmpty: true
     }
   };
+  switch (type) {
+    case "completo":
+      numero.exists = {
+        errorMessage: "Falta el numero de la factura",
+      };
+      fecha.exists = true;
+      base.exists = {
+        errorMessage: "Falta la base de la factura"
+      };
+      tipoIva.exists = true;
+      tipo.exists = true;
+      break;
+    case "parcial":
+    default:
+      numero.optional = true;
+      fecha.optional = true;
+      base.optional = true;
+      tipoIva.optional = true;
+      tipo.optional = true;
+      break;
+  }
 };
+const getFacturaCompleta = getFacturaSchema("completo");
+const getFacturaParcial = getFacturaSchema("parcial");
 
 router.get("/", (req, res, next) => {
   res.json(getFacturas());
@@ -66,6 +90,7 @@ router.get("/factura/:idFactura", (req, res, next) => {
   }
 });
 router.post("/factura/:idFactura", (req, res, next) => {
+  checkSchema(getFacturaCompleta);
   const nuevaFactura = req.body;
   const { factura, error } = creaFactura(nuevaFactura);
   if (error) {
@@ -75,6 +100,7 @@ router.post("/factura/:idFactura", (req, res, next) => {
   }
 });
 router.patch("/factura/:idFactura", (req, res, next) => {
+  checkSchema(getFacturaParcial);
   const id = +req.params.id;
   const facturaModificada = req.body;
   const { error, factura } = modificaFactura(id, facturaModificada);
@@ -96,6 +122,7 @@ router.delete("/factura/:idFactura", (req, res, next) => {
 });
 
 router.put("/factura/:idFactura", (req, res, next) => {
+  checkSchema(getFacturaCompleta);
   const id = +req.params.id;
   const facturaModificada = req.body;
   const { error, factura } = sustituyeFactura(id, facturaModificada);
