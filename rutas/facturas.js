@@ -4,7 +4,13 @@ const { checkSchema, check, validationResult } = require("express-validator");
 const router = express.Router();
 const facturasJSON = require("../facturas.json").facturas;
 const {
-  getFacturasTipo, getFacturas, getFactura, creaFactura, sustituyeFactura, modificaFactura
+  getFacturasTipo,
+  getFacturas,
+  getFactura,
+  creaFactura,
+  sustituyeFactura,
+  modificaFactura,
+  eliminaFactura
 } = require("../controladores/facturas");
 
 router.get("/", (req, res, next) => {
@@ -45,9 +51,17 @@ router.patch("/factura/:idFactura", (req, res, next) => {
     res.json(factura);
   }
 });
+
 router.delete("/factura/:idFactura", (req, res, next) => {
-  res.json();
+  const id = +req.params.id;
+  const { error, factura } = eliminaFactura(id);
+  if (error) {
+    next(error);
+  } else {
+    res.json(factura);
+  }
 });
+
 router.put("/factura/:idFactura", (req, res, next) => {
   const id = +req.params.id;
   const facturaModificada = req.body;
