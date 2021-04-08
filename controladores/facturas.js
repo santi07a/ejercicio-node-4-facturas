@@ -1,3 +1,4 @@
+const { DateTime } = require("luxon");
 let facturasJSON = require("../facturas.json").facturas;
 const { generaError } = require("../utiles/errores");
 
@@ -89,6 +90,17 @@ const eliminaFactura = idFactura => {
   respuesta.factura = factura;
   return respuesta;
 };
+
+const verificaVencimiento = (vencimiento) => {
+  const fechaHoy = DateTime.local();
+  const fechaVencimiento = DateTime.fromMillis(+vencimiento);
+  if (fechaVencimiento > fechaHoy) {
+    return true;
+  } else {
+    return false;
+  }
+};
+
 module.exports = {
   getFacturasTipo,
   getFacturas,
@@ -96,5 +108,6 @@ module.exports = {
   creaFactura,
   sustituyeFactura,
   modificaFactura,
-  eliminaFactura
+  eliminaFactura,
+  verificaVencimiento
 };

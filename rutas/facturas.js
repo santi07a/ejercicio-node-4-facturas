@@ -9,7 +9,8 @@ const {
   creaFactura,
   sustituyeFactura,
   modificaFactura,
-  eliminaFactura
+  eliminaFactura,
+  verificaVencimiento
 } = require("../controladores/facturas");
 
 const getFacturaSchema = type => {
@@ -71,7 +72,14 @@ const getFacturaCompleta = getFacturaSchema("completo");
 const getFacturaParcial = getFacturaSchema("parcial");
 
 router.get("/", (req, res, next) => {
-  res.json(getFacturas());
+  let listaFacturas = getFacturas();
+  if (req.query.abonadas === "true") {
+    listaFacturas = listaFacturas.filter(factura => factura.datos.abonada === true);
+  } else listaFacturas = listaFacturas.filter(factura => factura.datos.abonada === false);
+  if (req.query.vencidas === "true") {
+    listaFacturas = listaFacturas.filter(factura => verificaVencimiento(factura.datos.vencimiento) === true);
+  } else listaFacturas = listaFacturas.filter(factura => verificaVencimiento(factura.datos.vencimiento) === false);
+  res.json(listaFacturas);
 });
 
 router.get("/ingreso", (req, res, next) => {
