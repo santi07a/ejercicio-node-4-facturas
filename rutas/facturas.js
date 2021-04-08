@@ -93,6 +93,13 @@ router.get("/", (req, res, next) => {
       listaFacturas = listaFacturas.sort((a, b) => +b.datos.base - +a.datos.base);
     } else { listaFacturas = listaFacturas.sort((a, b) => +a.datos.base - +b.datos.base); }
   }
+  if (req.query.nPorPagina) {
+    if (req.query.pagina) {
+      listaFacturas = listaFacturas.slice(+req.query.pagina * +req.query.nPorPagina, (+req.query.pagina + 1) * +req.query.nPorPagina);
+    } else {
+      listaFacturas = listaFacturas.slice(0, +req.query.nPorPagina);
+    }
+  }
   res.json(listaFacturas);
 });
 
