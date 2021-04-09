@@ -25,7 +25,7 @@ const getFacturas = async (reqQuery, tipo) => {
       listaFacturas = Factura.findAll();
     }
   } else {
-    return generaError("El origen debe ser 'JSON' o 'MySQL'", 400);
+    return generaError("El parámetro de entrada debe ser 'JSON' o 'MySQL'", 400);
   }
   if (reqQuery.abonadas === "true") {
     listaFacturas = listaFacturas.filter(factura => factura.abonada === true);
@@ -55,8 +55,13 @@ const getFacturas = async (reqQuery, tipo) => {
   } return listaFacturas;
 };
 
-const getFactura = id => {
-  const factura = facturasJSON.find(factura => factura.id === id);
+const getFactura = async id => {
+  let factura;
+  if (options.datos.toLowerCase() === "json") {
+    factura = facturasJSON.find(factura => factura.id === id);
+  } else if (options.datos.toLowerCase() === "mysql") {
+    factura = await Factura.findByPk(id);
+  }
   const respuesta = {
     factura: null,
     error: null
