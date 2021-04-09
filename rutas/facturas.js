@@ -68,20 +68,20 @@ const getFacturaSchema = () => {
   };
 };
 
-router.get("/", (req, res, next) => {
+router.get("/", async (req, res, next) => {
   const queryParams = req.query;
-  const listaFacturas = getFacturas(queryParams);
+  const listaFacturas = await getFacturas(queryParams);
   res.json(baseFacturas(listaFacturas));
 });
 
-router.get("/ingresos", (req, res, next) => {
+router.get("/ingresos", async (req, res, next) => {
   const queryParams = req.query;
-  const listaFacturas = getFacturas(queryParams, "ingreso");
+  const listaFacturas = await getFacturas(queryParams, "ingreso");
   res.json(baseFacturas(listaFacturas));
 });
-router.get("/gastos", (req, res, next) => {
+router.get("/gastos", async (req, res, next) => {
   const queryParams = req.query;
-  const listaFacturas = getFacturas(queryParams, "gasto");
+  const listaFacturas = await getFacturas(queryParams, "gasto");
   res.json(baseFacturas(listaFacturas));
 });
 
@@ -97,9 +97,9 @@ router.get("/factura/:idFactura", (req, res, next) => {
   }
 });
 router.post("/factura/:idFactura", checkSchema(getFacturaSchema()),
-  (req, res, next) => {
+  async (req, res, next) => {
     const nuevaFactura = req.body;
-    const { factura, error } = creaFactura(nuevaFactura);
+    const { factura, error } = await creaFactura(nuevaFactura);
     if (error) {
       next(error);
     } else {
@@ -107,10 +107,10 @@ router.post("/factura/:idFactura", checkSchema(getFacturaSchema()),
     }
   });
 router.patch("/factura/:idFactura", checkSchema(getFacturaSchema()),
-  (req, res, next) => {
+  async (req, res, next) => {
     const id = +req.params.id;
     const facturaModificada = req.body;
-    const { error, factura } = modificaFactura(id, facturaModificada);
+    const { error, factura } = await modificaFactura(id, facturaModificada);
     if (error) {
       next(error);
     } else {
@@ -118,9 +118,9 @@ router.patch("/factura/:idFactura", checkSchema(getFacturaSchema()),
     }
   });
 
-router.delete("/factura/:idFactura", (req, res, next) => {
+router.delete("/factura/:idFactura", async (req, res, next) => {
   const id = +req.params.id;
-  const { error, factura } = eliminaFactura(id);
+  const { error, factura } = await eliminaFactura(id);
   if (error) {
     next(error);
   } else {
@@ -129,10 +129,10 @@ router.delete("/factura/:idFactura", (req, res, next) => {
 });
 
 router.put("/factura/:idFactura", checkSchema(getFacturaSchema),
-  (req, res, next) => {
+  async (req, res, next) => {
     const id = +req.params.id;
     const facturaModificada = req.body;
-    const { error, factura } = sustituyeFactura(id, facturaModificada);
+    const { error, factura } = await sustituyeFactura(id, facturaModificada);
     if (error) {
       next(error);
     } else {

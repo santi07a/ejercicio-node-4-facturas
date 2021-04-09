@@ -75,23 +75,38 @@ const getFactura = async id => {
   return respuesta;
 };
 
-const creaFactura = nuevaFactura => {
+const creaFactura = async nuevaFactura => {
   const respuesta = {
     factura: null,
     error: null
   };
-  if (facturasJSON.find(factura => factura.numero === nuevaFactura.numero)) {
-    const error = generaError("Ya existe la factura", 409);
-    respuesta.error = error;
+  if (options.datos.toLowerCase() === "json") {
+    if (facturasJSON.find(factura => factura.numero === nuevaFactura.numero)) {
+      const error = generaError("Ya existe la factura", 409);
+      respuesta.error = error;
+    }
+    if (!respuesta.error) {
+      nuevaFactura.id = facturasJSON[facturasJSON.length - 1].id + 1;
+      facturasJSON.push(nuevaFactura);
+      respuesta.factura = nuevaFactura;
+    }
+  } else if (options.datos.toLowerCase() === "mysql") {
+    const factura = await Factura.findOne({
+      where: {
+        numero: +factura.numero,
+      }
+    });
+    if (factura) {
+      const error = generaError("Ya existe la Factura", 409);
+      respuesta.error = error;
+    } else {
+      const nuevaFacturaBD = await Factura.create(nuevaFactura);
+      respuesta.factura = nuevaFacturaBD;
+    }
+    return respuesta;
   }
-  if (!respuesta.error) {
-    nuevaFactura.id = facturasJSON[facturasJSON.length - 1].id + 1;
-    facturasJSON.push(nuevaFactura);
-    respuesta.factura = nuevaFactura;
-  }
-  return respuesta;
 };
-const sustituyeFactura = (id, facturaModificada) => {
+const sustituyeFactura = async (id, facturaModificada) => {
   const factura = facturasJSON.find(factura => factura.id === id);
   const respuesta = {
     factura: null,
