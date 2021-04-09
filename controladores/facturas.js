@@ -2,16 +2,40 @@ const { DateTime } = require("luxon");
 let facturasJSON = require("../facturas.json").facturas;
 const { generaError } = require("../utiles/errores");
 
-const getFacturas = () => facturasJSON.map(factura => ({
-  total: factura.base + ((factura.base * factura.tipoIva) / 100),
-  datos: factura
-}));
-
-const getFacturasTipo = (tipo) => facturasJSON.filter(factura => factura.tipo === tipo)
-  .map(factura => ({
-    total: factura.base + ((factura.base * factura.tipoIva) / 100),
-    datos: factura
-  }));
+const getFacturas = (reqQuery, tipo) => {
+  let listaFacturas = facturasJSON;
+  if (tipo) {
+    listaFacturas = facturasJSON.filter(factura => factura.tipo === tipo);
+  } else {
+    listaFacturas = facturasJSON;
+  }
+  if (reqQuery.abonadas === "true") {
+    listaFacturas = listaFacturas.filter(factura => factura.abonada === true);
+  } else if (reqQuery.abonadas === "false") {
+    listaFacturas = listaFacturas.filter(factura => factura.abonada === false);
+  }
+  if (reqQuery.vencidas === "true") {
+    listaFacturas = listaFacturas.filter(factura => verificaVencimiento(factura.vencimiento) === true);
+  } else if (reqQuery.vencidas === "true") {
+    listaFacturas = listaFacturas.filter(factura => verificaVencimiento(factura.vencimiento) === false);
+  }
+  if (reqQuery.ordenPor === "fecha") {
+    if (reqQuery.orden === "desc") {
+      listaFacturas = listaFacturas.sort((a, b) => DateTime.fromMillis(+b.fecha) - DateTime.fromMillis(+a.fecha));
+    } else { listaFacturas = listaFacturas.sort((a, b) => DateTime.fromMillis(+a.fecha) - DateTime.fromMillis(+b.fecha)); }
+  } else if (reqQuery.ordenPor === "base") {
+    if (reqQuery.orden === "desc") {
+      listaFacturas = listaFacturas.sort((a, b) => +b.base - +a.base);
+    } else { listaFacturas = listaFacturas.sort((a, b) => +a.base - +b.base); }
+  }
+  if (reqQuery.nPorPagina) {
+    if (reqQuery.pagina) {
+      listaFacturas = listaFacturas.slice(+reqQuery.pagina * +reqQuery.nPorPagina, (+reqQuery.pagina + 1) * +reqQuery.nPorPagina);
+    } else {
+      listaFacturas = listaFacturas.slice(0, +reqQuery.nPorPagina);
+    }
+  } return listaFacturas;
+};
 
 const getFactura = id => {
   const factura = facturasJSON.find(factura => factura.id === id);
@@ -102,7 +126,6 @@ const verificaVencimiento = (vencimiento) => {
 };
 
 module.exports = {
-  getFacturasTipo,
   getFacturas,
   getFactura,
   creaFactura,

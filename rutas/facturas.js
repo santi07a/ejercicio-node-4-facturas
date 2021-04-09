@@ -1,6 +1,6 @@
 const { DateTime } = require("luxon");
 const express = require("express");
-const { checkSchema, check, validationResult } = require("express-validator");
+const { checkSchema, validationResult } = require("express-validator");
 
 const router = express.Router();
 const {
@@ -11,8 +11,12 @@ const {
   sustituyeFactura,
   modificaFactura,
   eliminaFactura,
-  verificaVencimiento
 } = require("../controladores/facturas");
+
+const baseFacturas = facturas => ({
+  total: facturas.length,
+  datos: facturas
+});
 
 const getFacturaSchema = () => {
   const numero = {
@@ -65,41 +69,20 @@ const getFacturaSchema = () => {
 };
 
 router.get("/", (req, res, next) => {
-  let listaFacturas = getFacturas();
-  if (req.query.abonadas === "true") {
-    listaFacturas = listaFacturas.filter(factura => factura.datos.abonada === true);
-  } else if (req.query.abonadas === "false") {
-    listaFacturas = listaFacturas.filter(factura => factura.datos.abonada === false);
-  }
-  if (req.query.vencidas === "true") {
-    listaFacturas = listaFacturas.filter(factura => verificaVencimiento(factura.datos.vencimiento) === true);
-  } else if (req.query.vencidas === "true") {
-    listaFacturas = listaFacturas.filter(factura => verificaVencimiento(factura.datos.vencimiento) === false);
-  }
-  if (req.query.ordenPor === "fecha") {
-    if (req.query.orden === "desc") {
-      listaFacturas = listaFacturas.sort((a, b) => DateTime.fromMillis(+b.datos.fecha) - DateTime.fromMillis(+a.datos.fecha));
-    } else { listaFacturas = listaFacturas.sort((a, b) => DateTime.fromMillis(+a.datos.fecha) - DateTime.fromMillis(+b.datos.fecha)); }
-  } else if (req.query.ordenPor === "base") {
-    if (req.query.orden === "desc") {
-      listaFacturas = listaFacturas.sort((a, b) => +b.datos.base - +a.datos.base);
-    } else { listaFacturas = listaFacturas.sort((a, b) => +a.datos.base - +b.datos.base); }
-  }
-  if (req.query.nPorPagina) {
-    if (req.query.pagina) {
-      listaFacturas = listaFacturas.slice(+req.query.pagina * +req.query.nPorPagina, (+req.query.pagina + 1) * +req.query.nPorPagina);
-    } else {
-      listaFacturas = listaFacturas.slice(0, +req.query.nPorPagina);
-    }
-  }
-  res.json(listaFacturas);
+  const queryParams = req.query;
+  const listaFacturas = getFacturas(queryParams);
+  res.json(baseFacturas(listaFacturas));
 });
 
 router.get("/ingreso", (req, res, next) => {
-  res.json(getFacturasTipo("ingreso"));
+  const queryParams = req.query;
+  const listaFacturas = getFacturas(queryParams, "ingreso");
+  res.json(baseFacturas(listaFacturas));
 });
 router.get("/gasto", (req, res, next) => {
-  res.json(getFacturasTipo("gasto"));
+  const queryParams = req.query;
+  const listaFacturas = getFacturas(queryParams, "gasto");
+  res.json(baseFacturas(listaFacturas));
 });
 router.get("/factura/:idFactura", (req, res, next) => {
   const id = +req.params.idFactura;
