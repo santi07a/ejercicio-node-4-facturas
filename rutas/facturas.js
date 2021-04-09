@@ -84,6 +84,9 @@ router.get("/gastos", (req, res, next) => {
   const listaFacturas = getFacturas(queryParams, "gasto");
   res.json(baseFacturas(listaFacturas));
 });
+
+const compruebaId = id => facturasJSON.find(factura => factura.id === +id);
+
 router.get("/factura/:idFactura", (req, res, next) => {
   const id = +req.params.idFactura;
   const { factura, error } = getFactura(id);
