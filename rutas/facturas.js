@@ -1,10 +1,10 @@
 const { DateTime } = require("luxon");
 const express = require("express");
-const { checkSchema, validationResult } = require("express-validator");
+const { checkSchema } = require("express-validator");
+const facturasJSON = require("..");
 
 const router = express.Router();
 const {
-  getFacturasTipo,
   getFacturas,
   getFactura,
   creaFactura,
@@ -93,27 +93,27 @@ router.get("/factura/:idFactura", (req, res, next) => {
     res.json(factura);
   }
 });
-router.post("/factura/:idFactura", (req, res, next) => {
-  checkSchema(getFacturaSchema());
-  const nuevaFactura = req.body;
-  const { factura, error } = creaFactura(nuevaFactura);
-  if (error) {
-    next(error);
-  } else {
-    res.json(factura);
-  }
-});
-router.patch("/factura/:idFactura", (req, res, next) => {
-  checkSchema(getFacturaSchema());
-  const id = +req.params.id;
-  const facturaModificada = req.body;
-  const { error, factura } = modificaFactura(id, facturaModificada);
-  if (error) {
-    next(error);
-  } else {
-    res.json(factura);
-  }
-});
+router.post("/factura/:idFactura", checkSchema(getFacturaSchema()),
+  (req, res, next) => {
+    const nuevaFactura = req.body;
+    const { factura, error } = creaFactura(nuevaFactura);
+    if (error) {
+      next(error);
+    } else {
+      res.json(factura);
+    }
+  });
+router.patch("/factura/:idFactura", checkSchema(getFacturaSchema()),
+  (req, res, next) => {
+    const id = +req.params.id;
+    const facturaModificada = req.body;
+    const { error, factura } = modificaFactura(id, facturaModificada);
+    if (error) {
+      next(error);
+    } else {
+      res.json(factura);
+    }
+  });
 
 router.delete("/factura/:idFactura", (req, res, next) => {
   const id = +req.params.id;
@@ -125,16 +125,16 @@ router.delete("/factura/:idFactura", (req, res, next) => {
   }
 });
 
-router.put("/factura/:idFactura", (req, res, next) => {
-  checkSchema(getFacturaSchema);
-  const id = +req.params.id;
-  const facturaModificada = req.body;
-  const { error, factura } = sustituyeFactura(id, facturaModificada);
-  if (error) {
-    next(error);
-  } else {
-    res.json(factura);
-  }
-});
+router.put("/factura/:idFactura", checkSchema(getFacturaSchema),
+  (req, res, next) => {
+    const id = +req.params.id;
+    const facturaModificada = req.body;
+    const { error, factura } = sustituyeFactura(id, facturaModificada);
+    if (error) {
+      next(error);
+    } else {
+      res.json(factura);
+    }
+  });
 
 module.exports = router;

@@ -1,3 +1,5 @@
+const { validationResult } = require("express-validator");
+
 const generaError = (mensaje, status) => {
   const error = new Error(mensaje);
   error.codigo = status;
@@ -16,8 +18,32 @@ const errorGeneral = (err, req, res, next) => {
   };
   res.status(error.codigo).json({ error: true, mensaje: error.mensaje });
 };
+const idInexistente = req => {
+  const errores = validationResult(req);
+  let error;
+  if (!errores.isEmpty()) {
+    const mapaErrores = errores.mapped();
+    if (mapaErrores.id) {
+      error = generaError(mapaErrores.id.msg, 404);
+    }
+  }
+  return error;
+};
+const errorBadRequest = req => {
+  const errores = validationResult(req);
+  let error;
+  if (!errores.isEmpty()) {
+    const mapaErrores = errores.mapped();
+    if (mapaErrores.numero || mapaErrores.fecha || mapaErrores.base || mapaErrores.tipoIva || mapaErrores.tipo || mapaErrores.abonada) {
+      error = generaError("La factura no tiene la forma correcta", 400);
+    }
+  }
+  return error;
+};
 
 module.exports = {
+  errorBadRequest,
+  idInexistente,
   generaError,
   errorNotFound,
   errorGeneral
