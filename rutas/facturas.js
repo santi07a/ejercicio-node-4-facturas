@@ -43,7 +43,7 @@ const getFacturaSchema = () => {
     }
   };
   const tipoIva = {
-    isInteger: {
+    isInt: {
       errorMessage: "El tipo del iva tiene que ser un número sin decimales",
       notEmpty: true
     }

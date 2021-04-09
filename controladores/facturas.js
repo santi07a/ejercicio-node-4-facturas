@@ -1,13 +1,31 @@
 const { DateTime } = require("luxon");
+const options = require("../parametrosCLI");
 let facturasJSON = require("../facturas.json").facturas;
 const { generaError } = require("../utiles/errores");
+const Factura = require("../db/models/factura");
 
-const getFacturas = (reqQuery, tipo) => {
+const getFacturas = async (reqQuery, tipo) => {
   let listaFacturas = facturasJSON;
-  if (tipo) {
-    listaFacturas = facturasJSON.filter(factura => factura.tipo === tipo);
+  if (options.datos.toLowerCase() === "json") {
+    if (tipo) {
+      listaFacturas = facturasJSON.filter(factura => factura.tipo === tipo);
+    } else {
+      listaFacturas = facturasJSON;
+    }
+  } else if (options.datos.toLowerCase() === "mysql") {
+    if (tipo) {
+      listaFacturas = await Factura.findAll(
+        {
+          where: {
+            tipo
+          }
+        }
+      );
+    } else {
+      listaFacturas = Factura.findAll();
+    }
   } else {
-    listaFacturas = facturasJSON;
+    return generaError("El origen debe ser 'JSON' o 'MySQL'", 400);
   }
   if (reqQuery.abonadas === "true") {
     listaFacturas = listaFacturas.filter(factura => factura.abonada === true);
