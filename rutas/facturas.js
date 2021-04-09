@@ -74,12 +74,12 @@ router.get("/", (req, res, next) => {
   res.json(baseFacturas(listaFacturas));
 });
 
-router.get("/ingreso", (req, res, next) => {
+router.get("/ingresos", (req, res, next) => {
   const queryParams = req.query;
   const listaFacturas = getFacturas(queryParams, "ingreso");
   res.json(baseFacturas(listaFacturas));
 });
-router.get("/gasto", (req, res, next) => {
+router.get("/gastos", (req, res, next) => {
   const queryParams = req.query;
   const listaFacturas = getFacturas(queryParams, "gasto");
   res.json(baseFacturas(listaFacturas));
