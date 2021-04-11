@@ -1,7 +1,5 @@
-const { DateTime } = require("luxon");
 const express = require("express");
 const { checkSchema } = require("express-validator");
-const facturasJSON = require("..");
 
 const router = express.Router();
 const {
@@ -117,8 +115,6 @@ router.get("/gastos", async (req, res, next) => {
   const listaFacturas = await getFacturas(queryParams, "gasto");
   res.json(baseFacturas(listaFacturas));
 });
-
-const compruebaId = id => facturasJSON.find(factura => factura.id === +id);
 
 router.get("/factura/:idFactura", (req, res, next) => {
   const id = +req.params.idFactura;
