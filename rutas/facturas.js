@@ -10,6 +10,7 @@ const {
   modificaFactura,
   eliminaFactura,
 } = require("../controladores/facturas");
+const { errorBadRequest } = require("../utiles/errores");
 
 const baseFacturas = facturas => ({
   total: facturas.length,
@@ -20,9 +21,6 @@ const getFacturasSchema = tipoFactura => {
   const numero = {
     isLength: {
       errorMessage: "El numero tiene que tener 4 caracteres",
-      options: {
-        min: 4
-      }
     }
   };
   const fecha = {
@@ -116,25 +114,32 @@ router.get("/gastos", async (req, res, next) => {
   res.json(baseFacturas(listaFacturas));
 });
 
-router.get("/factura/:idFactura", (req, res, next) => {
-  const id = +req.params.idFactura;
-  const { factura, error } = getFactura(id);
+router.get("/factura/:idFactura", async (req, res, next) => {
+  const idFactura = +req.params.idFactura;
+  const { factura, error } = await getFactura(idFactura);
   if (error) {
-    return next(error);
+    next(error);
   } else {
     res.json(factura);
   }
 });
-router.post("/factura/:idFactura", checkSchema(getFacturaCompletaSchema),
+
+router.post("/factura",
+  checkSchema(getFacturaCompletaSchema),
   async (req, res, next) => {
-    const nuevaFactura = req.body;
-    const { factura, error } = await creaFactura(nuevaFactura);
+    const facturaNueva = req.body;
+    const error400 = errorBadRequest(req);
+    if (error400) {
+      return next(error400);
+    }
+    const { factura, error } = await creaFactura(facturaNueva);
     if (error) {
       next(error);
     } else {
       res.json(factura);
     }
   });
+
 router.patch("/factura/:idFactura", checkSchema(getFacturaParcialSchema),
   async (req, res, next) => {
     const id = +req.params.id;
