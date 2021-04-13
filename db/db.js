@@ -7,7 +7,7 @@ const sequelize = new Sequelize({
   host: "localhost",
   database: "facturas",
   username: "santi07a",
-  password: "Boch@273",
+  password: "santi07a",
   dialect: "mysql",
   logging: mensaje => debug(chalk.blue("Ésta es la consulta SQL: "), chalk.green(mensaje))
 });

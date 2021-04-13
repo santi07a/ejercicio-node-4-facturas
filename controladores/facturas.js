@@ -12,46 +12,81 @@ const getFacturas = async (reqQuery, tipo) => {
     } else {
       listaFacturas = facturasJSON;
     }
+    if (reqQuery.abonadas === "true") {
+      listaFacturas = listaFacturas.filter(factura => factura.abonada === true);
+    } else if (reqQuery.abonadas === "false") {
+      listaFacturas = listaFacturas.filter(factura => factura.abonada === false);
+    }
+    if (reqQuery.vencidas === "true") {
+      listaFacturas = listaFacturas.filter(factura => verificaVencimiento(factura.vencimiento) === true);
+    } else if (reqQuery.vencidas === "true") {
+      listaFacturas = listaFacturas.filter(factura => verificaVencimiento(factura.vencimiento) === false);
+    }
+    if (reqQuery.ordenPor === "fecha") {
+      if (reqQuery.orden === "desc") {
+        listaFacturas = listaFacturas.sort((a, b) => DateTime.fromMillis(+b.fecha) - DateTime.fromMillis(+a.fecha));
+      } else { listaFacturas = listaFacturas.sort((a, b) => DateTime.fromMillis(+a.fecha) - DateTime.fromMillis(+b.fecha)); }
+    } else if (reqQuery.ordenPor === "base") {
+      if (reqQuery.orden === "desc") {
+        listaFacturas = listaFacturas.sort((a, b) => +b.base - +a.base);
+      } else { listaFacturas = listaFacturas.sort((a, b) => +a.base - +b.base); }
+    }
+    if (reqQuery.nPorPagina) {
+      if (reqQuery.pagina) {
+        listaFacturas = listaFacturas.slice(+reqQuery.pagina * +reqQuery.nPorPagina, (+reqQuery.pagina + 1) * +reqQuery.nPorPagina);
+      } else {
+        listaFacturas = listaFacturas.slice(0, +reqQuery.nPorPagina);
+      }
+    }
   } else if (options.datos.toLowerCase() === "mysql") {
+    const condicion = {
+      where: {}
+    };
     if (tipo) {
-      listaFacturas = await Factura.findAll(
-        {
-          where: {
-            tipo
-          }
+      condicion.where.tipo = tipo;
+    }
+    if (reqQuery.abonadas) {
+      condicion.where.abonada = reqQuery.abonadas === "true";
+    }
+
+    if (reqQuery.vencidas) {
+      if (reqQuery.vencidas) {
+        if (reqQuery.vencidas === "true") {
+          condicion.where.abonada = { $gt: new Date().getTime() };
+        } else {
+          condicion.where.abonada = { lt: new Date().getTime() };
         }
-      );
+      }
+    }
+
+    if (reqQuery.ordenPor) {
+      if (!reqQuery.orden || reqQuery.orden === "asc" || reqQuery.ordenPor === "") {
+        if (reqQuery.ordenPor === "fecha") {
+          condicion.order = ["fecha", "ASC"];
+        } else if (reqQuery.ordenPor === "base") {
+          condicion.order = ["base", "ASC"];
+        }
+      } else if (reqQuery.orden === "desc") {
+        if (reqQuery.ordenPor === "fecha") {
+          condicion.order = ["fecha", "DESC"];
+        } else if (reqQuery.ordenPor === "base") {
+          condicion.order = ["base", "DESC"];
+        }
+      }
+    }
+    if (reqQuery.nPorPagina) {
+      if (reqQuery.pagina) {
+        condicion.limit = (+reqQuery.pagina + 1) * +reqQuery.nPorPagina;
+        condicion.offset = +reqQuery.pagina * +reqQuery.nPorPagina;
+      } else {
+        condicion.limit = +reqQuery.nPorPagina;
+        condicion.offset = 0;
+      }
     } else {
       listaFacturas = Factura.findAll();
     }
   } else {
     return generaError("El parámetro de entrada debe ser 'JSON' o 'MySQL'", 400);
-  }
-  if (reqQuery.abonadas === "true") {
-    listaFacturas = listaFacturas.filter(factura => factura.abonada === true);
-  } else if (reqQuery.abonadas === "false") {
-    listaFacturas = listaFacturas.filter(factura => factura.abonada === false);
-  }
-  if (reqQuery.vencidas === "true") {
-    listaFacturas = listaFacturas.filter(factura => verificaVencimiento(factura.vencimiento) === true);
-  } else if (reqQuery.vencidas === "true") {
-    listaFacturas = listaFacturas.filter(factura => verificaVencimiento(factura.vencimiento) === false);
-  }
-  if (reqQuery.ordenPor === "fecha") {
-    if (reqQuery.orden === "desc") {
-      listaFacturas = listaFacturas.sort((a, b) => DateTime.fromMillis(+b.fecha) - DateTime.fromMillis(+a.fecha));
-    } else { listaFacturas = listaFacturas.sort((a, b) => DateTime.fromMillis(+a.fecha) - DateTime.fromMillis(+b.fecha)); }
-  } else if (reqQuery.ordenPor === "base") {
-    if (reqQuery.orden === "desc") {
-      listaFacturas = listaFacturas.sort((a, b) => +b.base - +a.base);
-    } else { listaFacturas = listaFacturas.sort((a, b) => +a.base - +b.base); }
-  }
-  if (reqQuery.nPorPagina) {
-    if (reqQuery.pagina) {
-      listaFacturas = listaFacturas.slice(+reqQuery.pagina * +reqQuery.nPorPagina, (+reqQuery.pagina + 1) * +reqQuery.nPorPagina);
-    } else {
-      listaFacturas = listaFacturas.slice(0, +reqQuery.nPorPagina);
-    }
   } return listaFacturas;
 };
 

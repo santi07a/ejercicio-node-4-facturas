@@ -34,8 +34,9 @@ const errorBadRequest = req => {
   let error;
   if (!errores.isEmpty()) {
     const mapaErrores = errores.mapped();
-    error = generaError("La factura no tiene la forma correcta", 400);
-    console.log(mapaErrores);
+    if (mapaErrores.numero || mapaErrores.fecha || mapaErrores.base || mapaErrores.tipoIva || mapaErrores.tipo || mapaErrores.abonada) {
+      error = generaError("La factura no tiene la forma correcta", 400);
+    }
   }
   return error;
 };

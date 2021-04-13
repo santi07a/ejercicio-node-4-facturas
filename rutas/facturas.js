@@ -1,5 +1,7 @@
+const { DateTime } = require("luxon");
 const express = require("express");
 const { checkSchema } = require("express-validator");
+const facturasJSON = require("..");
 
 const router = express.Router();
 const {
@@ -10,78 +12,50 @@ const {
   modificaFactura,
   eliminaFactura,
 } = require("../controladores/facturas");
-const { errorBadRequest } = require("../utiles/errores");
 
 const baseFacturas = facturas => ({
   total: facturas.length,
   datos: facturas
 });
 
-const getFacturasSchema = tipoFactura => {
+const getFacturaSchema = () => {
   const numero = {
-    isLength: {
-      errorMessage: "El numero tiene que tener 4 caracteres",
-    }
+    errorMessage: "Solo acepto números",
+    notEmpty: true
   };
   const fecha = {
-    errorMessage: "Falta la fecha de la factura",
+    errorMessage: "Falta La fecha de la factura",
     notEmpty: true
   };
   const vencimiento = {
-    optional: true,
-    notEmpty: true
+    errorMessage: "Debes poner una fecha de vencimiento válida",
   };
   const concepto = {
-    optional: true,
-    notEmpty: true
+    errorMessage: "Falta el concepto de la factura",
   };
   const base = {
     isFloat: {
-      errorMessage: "Valor incorrecto, debe ser un numero",
+      errorMessage: "La base imponible debe ser válida",
+      notEmpty: true,
       options: {
         min: 0
-      }
+      },
     }
   };
   const tipoIva = {
     isInt: {
-      errorMessage: "Valor incorrecto, debe ser un numero",
+      errorMessage: "El tipo del iva tiene que ser un número sin decimales",
       notEmpty: true
     }
   };
   const tipo = {
-    custom: {
-      errorMessage: "Valor incorrecto, debe ser un tipo gasto o ingreso",
-      options: value => value === "gasto" || value === "ingreso"
-    }
+    errorMessage: "Falta el tipo de la factura",
+    notEmpty: true
   };
   const abonada = {
-    errorMessage: "Valor incorrecto, debe ser un numero"
+    errorMessage: "especifica si la factura está abonada",
+    notEmpty: true
   };
-  switch (tipoFactura) {
-    case "completo":
-      numero.exists = {
-        errorMessage: "Falta el numero de la factura"
-      };
-      fecha.exists = true;
-      base.exists = {
-        errorMessage: "Falta la base de la factura"
-      };
-      tipoIva.exists = true;
-      tipo.exists = true;
-      abonada.exists = true;
-      break;
-    case "parcial":
-    default:
-      numero.optional = true;
-      fecha.optional = true;
-      base.optional = true;
-      tipoIva.optional = true;
-      tipo.optional = true;
-      abonada.optional = true;
-      break;
-  }
-
   return {
     numero,
     fecha,
@@ -93,9 +67,6 @@ const getFacturasSchema = tipoFactura => {
     abonada
   };
 };
-
-const getFacturaCompletaSchema = getFacturasSchema("completo");
-const getFacturaParcialSchema = getFacturasSchema("parcial");
 
 router.get("/", async (req, res, next) => {
   const queryParams = req.query;
@@ -114,33 +85,28 @@ router.get("/gastos", async (req, res, next) => {
   res.json(baseFacturas(listaFacturas));
 });
 
-router.get("/factura/:idFactura", async (req, res, next) => {
-  const idFactura = +req.params.idFactura;
-  const { factura, error } = await getFactura(idFactura);
+const compruebaId = id => facturasJSON.find(factura => factura.id === +id);
+
+router.get("/factura/:idFactura", (req, res, next) => {
+  const id = +req.params.idFactura;
+  const { factura, error } = getFactura(id);
   if (error) {
-    next(error);
+    return next(error);
   } else {
     res.json(factura);
   }
 });
-
-router.post("/factura",
-  checkSchema(getFacturaCompletaSchema),
+router.post("/factura/:idFactura", checkSchema(getFacturaSchema()),
   async (req, res, next) => {
-    const facturaNueva = req.body;
-    const error400 = errorBadRequest(req);
-    if (error400) {
-      return next(error400);
-    }
-    const { factura, error } = await creaFactura(facturaNueva);
+    const nuevaFactura = req.body;
+    const { factura, error } = await creaFactura(nuevaFactura);
     if (error) {
       next(error);
     } else {
       res.json(factura);
     }
   });
-
-router.patch("/factura/:idFactura", checkSchema(getFacturaParcialSchema),
+router.patch("/factura/:idFactura", checkSchema(getFacturaSchema()),
   async (req, res, next) => {
     const id = +req.params.id;
     const facturaModificada = req.body;
@@ -162,7 +128,7 @@ router.delete("/factura/:idFactura", async (req, res, next) => {
   }
 });
 
-router.put("/factura/:idFactura", checkSchema(getFacturaCompletaSchema),
+router.put("/factura/:idFactura", checkSchema(getFacturaSchema),
   async (req, res, next) => {
     const id = +req.params.id;
     const facturaModificada = req.body;
