@@ -11,11 +11,11 @@ const ProyectoSchema = new Schema({
   },
   aprobado: {
     type: String,
-    default: new Date()
+    required: true
   },
   entrega: {
     type: String,
-    default: new Date()
+    required: true
   },
   cliente: {
     type: String,

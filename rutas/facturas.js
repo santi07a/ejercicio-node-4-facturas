@@ -87,9 +87,9 @@ router.get("/gastos", async (req, res, next) => {
 
 const compruebaId = id => facturasJSON.find(factura => factura.id === +id);
 
-router.get("/factura/:idFactura", (req, res, next) => {
+router.get("/factura/:idFactura", async (req, res, next) => {
   const id = +req.params.idFactura;
-  const { factura, error } = getFactura(id);
+  const { factura, error } = await getFactura(id);
   if (error) {
     return next(error);
   } else {
