@@ -44,8 +44,22 @@ const getProyectoSchema = () => {
 
 router.get("/", async (req, res, next) => {
   const queryParams = req.query;
-  const listaProyectos = await getProyectos();
+  const listaProyectos = await getProyectos(queryParams);
   res.json(baseProyecto(listaProyectos));
 });
-
+router.get("/pendientes", async (req, res, next) => {
+  const queryParams = req.query;
+  const listaProyectos = await getProyectos(queryParams, "pendientes");
+  res.json(baseProyecto(listaProyectos));
+});
+router.get("/en-progreso", async (req, res, next) => {
+  const queryParams = req.query;
+  const listaProyectos = await getProyectos(queryParams, "en-progreso");
+  res.json(baseProyecto(listaProyectos));
+});
+router.get("/finalizados", async (req, res, next) => {
+  const queryParams = req.query;
+  const listaProyectos = await getProyectos(queryParams, "finalizados");
+  res.json(baseProyecto(listaProyectos));
+});
 module.exports = router;
