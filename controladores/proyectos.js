@@ -2,15 +2,27 @@ const Proyecto = require("../db/models/proyecto");
 const { generaError } = require("../utiles/errores");
 
 const getProyectos = async (queryParams, tipo) => {
-  let listaProyectos;
-  if (tipo === "pendientes") {
-    listaProyectos = await Proyecto.find({ estado: "pendiente" });
-  } else if (tipo === "en-progreso") {
-    listaProyectos = await Proyecto.find({ estado: "wip" });
-  } else if (tipo === "finalizados") {
-    listaProyectos = await Proyecto.find({ estado: "finalizado" });
-  } else listaProyectos = await Proyecto.find();
-  return listaProyectos;
+  const condicion = {};
+  if (tipo) {
+    condicion.estado = tipo;
+  }
+  if (queryParams.tecnologias) {
+    const tecnologias = queryParams.tecnologias.split(", ");
+    condicion.tecnologias = {
+      $all: tecnologias
+    };
+  }
+  const hoy = new Date().getTime();
+  if (queryParams.vencidos) {
+    condicion.entrega = queryParams.vencidos === "false" ? { $gte: hoy } : { $lt: hoy };
+  }
+  const ordenTipo = queryParams.ordenPor === "fecha" ? "entrega" : "nombre";
+  const orden = queryParams.orden === "DESC" ? -1 : 1;
+  const proyectos = await Proyecto.find(condicion)
+    .sort({ [ordenTipo]: orden })
+    .limit(queryParams.nPorPagina ? +queryParams.nPorPagina : 0)
+    .skip(queryParams.nPorPagina && queryParams.pagina ? (+queryParams.nPorPagina * +queryParams.pagina) - +queryParams.nPorPagina : 0);
+  return proyectos;
 };
 
 const getProyecto = async id => {
