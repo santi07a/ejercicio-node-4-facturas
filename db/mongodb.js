@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const debug = require("debug")("proyectos:mongoDB");
 
-mongoose.connect("mongodb://localhost/proyectos", {
+mongoose.connect("mongodb://localhost/Proyectos", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   useFindAndModify: false

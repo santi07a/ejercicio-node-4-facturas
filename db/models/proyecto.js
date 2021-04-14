@@ -10,11 +10,11 @@ const ProyectoSchema = new Schema({
     required: true
   },
   aprobado: {
-    type: Date,
+    type: String,
     default: new Date()
   },
   entrega: {
-    type: Date,
+    type: String,
     default: new Date()
   },
   cliente: {
@@ -22,7 +22,7 @@ const ProyectoSchema = new Schema({
     required: true
   },
   tecnologias: {
-    type: Array
+    type: [String]
   }
 });
 

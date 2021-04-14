@@ -7,6 +7,8 @@ const chalk = require("chalk");
 const cors = require("cors");
 const options = require("./parametrosCLI");
 const rutaFacturas = require("./rutas/facturas");
+const rutaProyectos = require("./rutas/proyectos");
+require("./db/mongodb");
 
 const app = express();
 
@@ -19,6 +21,7 @@ app.use(express.json());
 app.use(morgan("dev"));
 app.use(cors());
 app.use("/facturas", rutaFacturas);
+app.use("/proyectos", rutaProyectos);
 app.get("/", (req, res, next) => {
   res.redirect("/facturas");
 });
